@@ -117,14 +117,14 @@ def send_telegram_message_reminder(temperature, rain_forecast):
     token='{replace}'
     chat_id='{replace}'
     temp = str(temperature)
-    message='['+temp+'度] 少心凍親！ 記得著多啲！Be careful it is getting cold! Do not forget to wear a couple more layers when you are going out!'
+    message='['+temp+'度] 少心凍親！ 記得著多啲！Becareful it is getting cold! Do not forget to wear a couple more layers when you are going out!'
+    if rain_forecast:
+        message = '['+temp+'度][有雨] 少心凍親！ 記得著多啲！带遮啊！ Becareful it is getting cold! Do not forget to wear a couple more layers when you are going out! Remember to bring an umbrella as well!'
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     params = {
         'chat_id': chat_id,
         'text': message
     }
-    if rain_forecast:
-        message += " It might rain later, remember to bring an umbrella!"
     try:
         response = requests.post(url, json=params)
         if response.status_code == 200:
@@ -138,14 +138,14 @@ def send_telegram_message_warning(temperature, rain_forecast):
     token='{replace}'
     chat_id='{replace}'
     temp = str(temperature)
-    message='['+temp+'度] 好L凍！要包到成隻粽咁先可以出去！ Be careful it is getting cold! Do not forget to wear a couple more layers when you are going out!'
+    message= '['+temp+'度] 好L凍！要包到成隻粽咁先可以出去！带遮啊！ Becareful it is getting cold! Do not forget to wear a couple more layers when you are going out!'
+    if rain_forecast:
+        message = '['+temp+'度][有雨】 好L凍！要包到成隻粽咁先可以出去！带遮啊！ OMG SOOOOO COLD! WEAR UNTIL YOU LOOK LIKE A TURTLE!'
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     params = {
         'chat_id': chat_id,
         'text': message
     }
-    if rain_forecast:
-        message += " It might rain later, remember to bring an umbrella!"
     try:
         response = requests.post(url, json=params)
         if response.status_code == 200:
