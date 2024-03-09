@@ -1,0 +1,145 @@
+import requests
+import json
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
+
+
+def get_weather():
+    api_key = "5ae120b0e854caf22f609c46800e97a9"
+    city = "1675151"
+    url = "http://api.openweathermap.org/data/2.5/weather?"
+    url_final = url + "appid=" + api_key + "&id=" + city + "&units=metric"
+    response = requests.get(url_final)
+    data = response.json()
+    return data
+
+def get_forecast():
+    api_key = "5ae120b0e854caf22f609c46800e97a9"
+    city = "1675151"
+    url = "http://api.openweathermap.org/data/2.5/forecast?"
+    url_final = url + "appid=" + api_key + "&id=" + city + "&units=metric"
+    response = requests.get(url_final)
+    data = response.json()
+    return data
+
+def check_rain_forecast(hourly_forecast):
+    for forecast in hourly_forecast['list']:
+        if 'rain' in forecast.get('weather', [])[0].get('main', '').lower():
+            return True
+    return False
+
+def send_warning_email(temperature, rain_forecast):
+    temp = str(temperature)
+    sender_email = "hornhornleung@gmail.com"
+    sender_password = "dooo ascm kusk aghl"
+    receiver_email = "liuwangngai@gmail.com"
+    msg = MIMEMultipart()
+    msg['Subject'] = "WARNING! COLD WEATHER "+temp+" degree TODAY!"
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    message = f"Hey, it is going to be very cold today, you must wear more when you go out!"
+
+    if rain_forecast:
+        message += " It might rain later, remember to bring an umbrella!"
+
+    with open(r'C:\Users\wawac\Downloads\coldbeans.jpg', "rb") as f:
+        image_data = f.read()
+
+    html_msg = f"""
+    <html>
+        <body style="color: blue; font-family: Arial, sans-serif;">
+            <p style="font-size: 38px;"><b>{msg['Subject']}</b></p>
+            <img src="cid:image" style="width: 180px; height: auto;">
+            <p style="font-size: 22px; color: black;">{message}</p>
+        </body>
+    </html>
+    """
+
+    msg.attach(MIMEText(html_msg, 'html'))
+
+    img = MIMEImage(image_data, name='coldbeans.jpg')
+    img.add_header('Content-ID', '<image>')
+    msg.attach(img)
+    
+    
+    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server.starttls()
+    server.login(sender_email, sender_password)
+    server.sendmail(sender_email, receiver_email, msg.as_string())
+    server.quit()
+    print("EMAIL sent successfully")
+
+def send_reminder_email(temperature, rain_forecast=True):
+    temp = str(temperature)
+    sender_email = "hornhornleung@gmail.com"
+    sender_password = "dooo ascm kusk aghl"
+    receiver_email = "liuwangngai@gmail.com"
+    msg = MIMEMultipart()
+    msg['Subject'] = "WARNING! COLD WEATHER "+temp+" degree TODAY!"
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    message = f"Hey, it is going to be quite cold today, would recommend you wear a bit more when you go out!"
+
+    if rain_forecast:
+        message += " It might rain later, remember to bring an umbrella!"
+    
+    with open(r'C:\Users\wawac\Downloads\coldbeans.jpg', "rb") as f:
+        image_data = f.read()
+
+    html_msg = f"""
+    <html>
+        <body style="color: blue; font-family: Arial, sans-serif;">
+            <p style="font-size: 38px;"><b>{msg['Subject']}</b></p>
+            <img src="cid:image" style="width: 180px; height: auto;">
+            <p style="font-size: 22px; color: black;">{message}</p>
+        </body>
+    </html>
+    """
+
+    msg.attach(MIMEText(html_msg, 'html'))
+
+    img = MIMEImage(image_data, name='coldbeans.jpg')
+    img.add_header('Content-ID', '<image>')
+    msg.attach(img)
+    
+    
+    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server.starttls()
+    server.login(sender_email, sender_password)
+    server.sendmail(sender_email, receiver_email, msg.as_string())
+    server.quit()
+    print("EMAIL sent successfully")
+    
+def main():
+    weather_data = get_weather()
+    hourly_forecast = get_forecast()
+    rain_forecast = check_rain_forecast(hourly_forecast)
+    if weather_data["cod"] != "404":
+        temperature = weather_data["main"]["temp"]
+        weather = weather_data['weather'][0]['description']
+        humidity = weather_data['main']['humidity']
+        wind_speed = weather_data['wind']['speed']
+
+        print(f"Weather in Hsinchu:")
+        print(f"Temperature: {temperature}°C")
+        print(f"Weather: {weather}")
+        print(f"Humidity: {humidity}%")
+        print(f"Wind Speed: {wind_speed} m/s")
+
+        if temperature < 10:
+            print("COLD WEATHER! MUST WEAR MORE LAYERS!")
+            send_warning_email(temperature, rain_forecast)
+        elif temperature < 15:
+            print("COLD WEATHER! RECOMMEND WEAR MORE LAYERS!")
+            send_reminder_email(temperature, rain_forecast)
+        elif temperature < 20:
+            print("BIT CHILLI!")
+        else:
+            print("NICE WARM AND COLD!")
+    else:
+        print("City does not exist!")
+
+if __name__ == "__main__":
+    main()
